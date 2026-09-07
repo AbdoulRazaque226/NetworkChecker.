@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1051876516870",
+    "project_id": "networkchecker-67f04",
+    "storage_bucket": "networkchecker-67f04.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051876516870:android:e65fc55f34bd9443a64f87",
+        "android_client_info": {
+          "package_name": "com.ffsc2026.network_checker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXtRUe0PbH1S7LnGx-26iFVY0AsjmnLDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
