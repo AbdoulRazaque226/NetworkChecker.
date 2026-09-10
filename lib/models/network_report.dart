@@ -2,32 +2,18 @@ import 'package:flutter/foundation.dart';
 
 import 'network_status.dart';
 
-/// A single, immutable network diagnostic report.
-///
-/// This class is the **shared contract** of the whole application:
-///  - [NetworkService] (your workspace) builds it from the native Platform
-///    Channel provided by Abdoul.
-///  - [FirestoreService] persists it under `users/{uid}/reports/{reportId}`.
-///  - Ben's UI (status_card, history_tile, details_screen) reads it for display.
-///
-/// Because three people depend on its shape, changing a field name or type
-/// impacts the whole team — notify Ben before modifying this model.
+
 @immutable
 class NetworkReport {
-  /// Firestore document id (`reportId`). Empty string until the report is
-  /// persisted (Firestore generates the authoritative id on save).
+  
   final String id;
 
-  /// When the diagnostic was run (local device time).
   final DateTime timestamp;
 
-  /// Type of connection detected: wi-fi, mobile or none.
   final NetworkStatus connectionType;
-
-  /// Whether a real internet access was confirmed by the native layer.
   final bool isConnected;
 
-  /// Signal strength provided by the native layer, when available.
+  
   final int? signalStrength;
 
   /// Local IP address provided by the native layer, when available.
@@ -57,13 +43,7 @@ class NetworkReport {
     this.userId = '',
   });
 
-  /// Rebuilds a [NetworkReport] from a JSON map.
-  ///
-  /// Accepts the shape produced by [toJson] (ISO-8601 timestamp string) and is
-  /// tolerant of a `DateTime` object or an epoch-milliseconds integer, so it
-  /// can also be reused after reading Firestore data (where the timestamp is a
-  /// `Timestamp` — convert it to `DateTime` before calling, as done in
-  /// FirestoreService).
+  
   factory NetworkReport.fromJson(Map<String, dynamic> json) {
     return NetworkReport(
       id: json['id'] as String? ?? '',
@@ -78,11 +58,7 @@ class NetworkReport {
     );
   }
 
-  /// Serializes this report into a JSON map.
-  ///
-  /// `connectionType` is written as its canonical string ('wifi', 'mobile',
-  /// 'none') and `timestamp` as an ISO-8601 string, which keeps the output
-  /// human-readable and directly usable by the export feature.
+ 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
