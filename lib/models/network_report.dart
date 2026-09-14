@@ -25,6 +25,9 @@ class NetworkReport {
   /// Measured round-trip time to a known host, in milliseconds.
   final int? latencyMs;
 
+  /// Device battery level as a percentage (0-100), when available.
+  final int? batteryLevel;
+
   /// Firebase Auth uid of the user who owns this report.
   final String userId;
 
@@ -40,6 +43,7 @@ class NetworkReport {
     this.ipAddress,
     this.ssid,
     this.latencyMs,
+    this.batteryLevel,
     this.userId = '',
   });
 
@@ -54,6 +58,7 @@ class NetworkReport {
       ipAddress: json['ipAddress'] as String?,
       ssid: json['ssid'] as String?,
       latencyMs: json['latencyMs'] as int?,
+      batteryLevel: json['batteryLevel'] as int?,
       userId: json['userId'] as String? ?? '',
     );
   }
@@ -69,6 +74,7 @@ class NetworkReport {
       'ipAddress': ipAddress,
       'ssid': ssid,
       'latencyMs': latencyMs,
+      'batteryLevel': batteryLevel,
       'userId': userId,
     };
   }
@@ -83,6 +89,7 @@ class NetworkReport {
     String? ipAddress,
     String? ssid,
     int? latencyMs,
+    int? batteryLevel,
     String? userId,
   }) {
     return NetworkReport(
@@ -94,6 +101,7 @@ class NetworkReport {
       ipAddress: ipAddress ?? this.ipAddress,
       ssid: ssid ?? this.ssid,
       latencyMs: latencyMs ?? this.latencyMs,
+      batteryLevel: batteryLevel ?? this.batteryLevel,
       userId: userId ?? this.userId,
     );
   }
@@ -109,5 +117,6 @@ class NetworkReport {
   @override
   String toString() =>
       'NetworkReport(id: $id, connectionType: $connectionType, '
-      'isConnected: $isConnected, latencyMs: $latencyMs)';
+      'isConnected: $isConnected, latencyMs: $latencyMs, '
+      'batteryLevel: $batteryLevel)';
 }

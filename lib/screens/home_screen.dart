@@ -52,6 +52,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Widget _buildBatteryIndicator(int? batteryLevel) {
+    if (batteryLevel == null) return const SizedBox.shrink();
+
+    final Color color = batteryLevel <= 20
+        ? Colors.red
+        : batteryLevel <= 50
+            ? Colors.orange
+            : Colors.green;
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Icon(Icons.battery_charging_full, color: color, size: 26),
+            const SizedBox(width: 14),
+            Text(
+              'Batterie : $batteryLevel%',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,6 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   isConnected: provider.isConnected,
                   signalStrength: provider.lastReport?.signalStrength,
                 ),
+                const SizedBox(height: 12),
+                _buildBatteryIndicator(provider.lastReport?.batteryLevel),
                 const SizedBox(height: 24),
                 if (provider.lastError != null)
                   Padding(
