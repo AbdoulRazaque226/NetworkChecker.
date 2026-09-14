@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
       title: 'NetworkChecker',
       theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
       home: const AppStartup(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

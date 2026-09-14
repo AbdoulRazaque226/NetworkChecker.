@@ -51,11 +51,12 @@ class NetworkService {
   Future<NetworkReport> checkConnection({String userId = ''}) async {
     // 1. Fetch the raw values from the native side.
     //    Keys documented in the team guide:
-    //      - type         (String)  'wifi' | 'mobile' | 'none'
-    //      - isConnected  (bool)    real internet access confirmed
-    //      - signalStrength (int?)  null for now
-    //      - ipAddress    (String?) null for now
-    //      - ssid         (String?) null for now
+    //      - type           (String)  'wifi' | 'mobile' | 'none'
+    //      - isConnected    (bool)    real internet access confirmed
+    //      - signalStrength (int?)    wifi: RSSI dBm — mobile: level 0-4
+    //      - ipAddress      (String?) local IP (wifi or mobile)
+    //      - ssid           (String?) wifi only
+    //      - batteryLevel   (int?)    device battery percentage 0-100
     final Map<String, dynamic> raw = await _getNetworkInfo();
 
     // 2. Transform the raw map into typed values (robust coercions).
@@ -65,6 +66,7 @@ class NetworkService {
     final int? signalStrength = _asInt(raw['signalStrength']);
     final String? ipAddress = _asString(raw['ipAddress']);
     final String? ssid = _asString(raw['ssid']);
+    final int? batteryLevel = _asInt(raw['batteryLevel']);
 
     // 3. Measure latency only when a connection actually exists; otherwise it
     //    stays null and the report simply has no latency value. Any failure in
@@ -88,6 +90,7 @@ class NetworkService {
       ipAddress: ipAddress,
       ssid: ssid,
       latencyMs: latencyMs,
+      batteryLevel: batteryLevel,
       userId: userId,
     );
   }
