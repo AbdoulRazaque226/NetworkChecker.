@@ -33,7 +33,7 @@ import CoreLocation
   }
 
   /// Returns the same keys as the Android implementation:
-  /// type, isConnected, signalStrength, ipAddress, ssid.
+  /// type, isConnected, signalStrength, ipAddress, ssid, batteryLevel.
   private func getNetworkInfo() -> [String: Any?] {
     let path = monitor.currentPath
 
@@ -56,13 +56,15 @@ import CoreLocation
 
     let ipAddress = getIPAddress()
     let ssid = (type == "wifi") ? getWifiSSID() : nil
+    let batteryLevel = getBatteryLevel()
 
     return [
       "type": type,
       "isConnected": isConnected,
       "signalStrength": signalStrength,
       "ipAddress": ipAddress,
-      "ssid": ssid
+      "ssid": ssid,
+      "batteryLevel": batteryLevel
     ]
   }
 
@@ -96,7 +98,6 @@ import CoreLocation
     return address
   }
 
-  
   private func getWifiSSID() -> String? {
     guard let interfaces = CNCopySupportedInterfaces() as? [String] else { return nil }
     for interface in interfaces {
@@ -105,5 +106,19 @@ import CoreLocation
       }
     }
     return nil
+  }
+
+  /// Reads the device's battery level as a percentage (0-100).
+  ///
+  /// UIDevice.batteryMonitoringEnabled must be turned on first, otherwise
+  /// batteryLevel always returns -1.
+  private func getBatteryLevel() -> Int? {
+    let device = UIDevice.current
+    device.isBatteryMonitoringEnabled = true
+    let level = device.batteryLevel
+    if level < 0 {
+      return nil
+    }
+    return Int(level * 100)
   }
 }
