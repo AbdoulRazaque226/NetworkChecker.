@@ -167,28 +167,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       const SizedBox(height: 18),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            l10n.login_noAccount,
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => RegisterScreen(
-                                    authProvider: widget.authProvider,
-                                    languageProvider: widget.languageProvider,
+                      Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              l10n.login_noAccount,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => RegisterScreen(
+                                      authProvider: widget.authProvider,
+                                      languageProvider: widget.languageProvider,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            child: Text(l10n.login_createAccount),
-                          ),
-                        ],
-                      ),
+                                );
+                              },
+                              child: Text(l10n.login_createAccount),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
