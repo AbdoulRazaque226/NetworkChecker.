@@ -54,21 +54,60 @@ class AuthProvider extends ChangeNotifier {
 
   /// Signs the user in **anonymously** (no credentials required).
   Future<void> signIn() async {
+    await _run(() => _authService.signInAnonymously());
+  }
+
+  /// Signs the user in with an **email address and password**.
+  Future<void> signInWithEmail(String email, String password) async {
+    await _run(() => _authService.signInWithEmail(email, password));
+  }
+
+  /// Creates a new account with an **email address and password**.
+  Future<void> signUpWithEmail(String email, String password) async {
+    await _run(() => _authService.signUpWithEmail(email, password));
+  }
+
+  /// Runs an auth operation, tracking loading state and mapping failures to a
+  /// stable, localization-friendly error key (see [_errorKey]).
+  Future<void> _run(Future<User?> Function() action) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final User? user = await _authService.signInAnonymously();
+      final User? user = await action();
       if (user == null) {
-        _error = 'Sign-in completed but no user was returned.';
+        _error = 'login_genericError';
       }
     } catch (error) {
-      _error = error.toString();
+      _error = _errorKey(error);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Maps a thrown [FirebaseAuthException] to a known l10n key.
+  String _errorKey(Object error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'invalid-email':
+          return 'register_invalidEmail';
+        case 'user-not-found':
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'login_invalidCredentials';
+        case 'user-disabled':
+          return 'login_invalidCredentials';
+        case 'email-already-in-use':
+          return 'register_accountExists';
+        case 'weak-password':
+          return 'register_weakPassword';
+        default:
+          return 'login_genericError';
+      }
+    }
+    return 'login_genericError';
   }
 
   /// Signs the current user out.

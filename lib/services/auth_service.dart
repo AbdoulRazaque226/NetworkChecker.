@@ -25,6 +25,24 @@ class AuthService {
     return credential.user;
   }
 
+  /// Signs the user in with an email address and password.
+  Future<User?> signInWithEmail(String email, String password) async {
+    final UserCredential credential = await _auth.signInWithEmailAndPassword(
+      email: email.trim(),
+      password: password,
+    );
+    return credential.user;
+  }
+
+  /// Creates a new account with an email address and password.
+  Future<User?> signUpWithEmail(String email, String password) async {
+    final UserCredential credential = await _auth.createUserWithEmailAndPassword(
+      email: email.trim(),
+      password: password,
+    );
+    return credential.user;
+  }
+
   /// Signs the current user out.
   Future<void> signOut() => _auth.signOut();
 
