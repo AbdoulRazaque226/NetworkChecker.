@@ -19,7 +19,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.12.1
+
+# Generates the AppLocalizations class from lib/l10n/app_*.arb on every build.
+# (see the `flutter: generate: true` flag below)
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -39,6 +42,9 @@ dependencies:
   cloud_firestore: ^6.9.0
   share_plus: ^13.3.0
   path_provider: ^2.1.6
+  shared_preferences: ^2.2.3
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +62,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  # Generates the AppLocalizations class from lib/l10n/app_*.arb on every build.
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

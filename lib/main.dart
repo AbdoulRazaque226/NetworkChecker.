@@ -1,11 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'firebase_options.dart';
+import 'gen_l10n/app_localizations.dart';
 import 'providers/auth_provider.dart';
-import 'providers/network_provider.dart';
 import 'providers/history_provider.dart';
+import 'providers/language_provider.dart';
+import 'providers/network_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,32 +21,63 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final LanguageProvider _languageProvider = LanguageProvider();
+
+  @override
+  void initState() {
+    super.initState();
+    _languageProvider.loadSavedLocale();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'NetworkChecker',
-      theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
-      home: const AppStartup(),
-      debugShowCheckedModeBanner: false,
+    return ListenableBuilder(
+      listenable: _languageProvider,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'NetworkChecker',
+          debugShowCheckedModeBanner: false,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.system,
+          locale: _languageProvider.locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AppStartup(languageProvider: _languageProvider),
+        );
+      },
     );
   }
 }
 
-/// Gère la connexion anonyme au démarrage, puis affiche HomeScreen.
+/// Routes the user through the app: onboarding (first launch) → login/crate
+/// account → home. Follows the Firebase authentication state reactively.
 class AppStartup extends StatefulWidget {
-  const AppStartup({super.key});
+  const AppStartup({super.key, required this.languageProvider});
+
+  final LanguageProvider languageProvider;
 
   @override
   State<AppStartup> createState() => _AppStartupState();
 }
 
 class _AppStartupState extends State<AppStartup> {
+  static const String _onboardingPrefsKey = 'onboarding_completed';
+
   final AuthProvider _authProvider = AuthProvider();
   late final NetworkProvider _networkProvider = NetworkProvider();
   late final HistoryProvider _historyProvider = HistoryProvider();
+
+  bool _ready = false;
+  bool _onboardingCompleted = false;
 
   @override
   void initState() {
@@ -49,35 +86,77 @@ class _AppStartupState extends State<AppStartup> {
   }
 
   Future<void> _init() async {
-  print('DEBUT INIT');
-  if (!_authProvider.isAuthenticated) {
-    await _authProvider.signIn();
-    print('APRES SIGNIN - erreur: ${_authProvider.error}');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    _onboardingCompleted =
+        prefs.getBool(_onboardingPrefsKey) ?? false;
+
+    // Wire the data providers whenever a user is (or becomes) authenticated.
+    if (_authProvider.isAuthenticated) {
+      _wireProviders();
+      await _historyProvider.loadHistory(_authProvider.userId!);
+    }
+    _authProvider.addListener(_onAuthChanged);
+
+    if (mounted) setState(() => _ready = true);
   }
-  if (_authProvider.userId != null) {
-    print('USER ID: ${_authProvider.userId}');
+
+  void _onAuthChanged() {
+    if (_authProvider.isAuthenticated && _authProvider.userId != null) {
+      _wireProviders();
+      _historyProvider.loadHistory(_authProvider.userId!);
+    }
+  }
+
+  void _wireProviders() {
     _networkProvider.userId = _authProvider.userId!;
-    await _historyProvider.loadHistory(_authProvider.userId!);
-    print('HISTORIQUE CHARGE');
-  } else {
-    print('PAS DE USER ID - AUTHENTIFICATION ECHOUEE');
   }
-}
+
+  Future<void> _completeOnboarding() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingPrefsKey, true);
+    if (mounted) setState(() => _onboardingCompleted = true);
+  }
+
+  @override
+  void dispose() {
+    _authProvider.removeListener(_onAuthChanged);
+    _authProvider.dispose();
+    _networkProvider.dispose();
+    _historyProvider.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!_ready) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // First launch only.
+    if (!_onboardingCompleted) {
+      return OnboardingScreen(
+        languageProvider: widget.languageProvider,
+        onComplete: _completeOnboarding,
+      );
+    }
+
     return ListenableBuilder(
       listenable: _authProvider,
       builder: (context, _) {
         if (_authProvider.isLoading || !_authProvider.isAuthenticated) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return LoginScreen(
+            authProvider: _authProvider,
+            languageProvider: widget.languageProvider,
           );
         }
 
         return HomeScreen(
           networkProvider: _networkProvider,
           historyProvider: _historyProvider,
+          authProvider: _authProvider,
+          languageProvider: widget.languageProvider,
         );
       },
     );

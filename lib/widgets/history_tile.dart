@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/network_report.dart';
 
 class HistoryTile extends StatelessWidget {
@@ -15,22 +16,75 @@ class HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor = report.isConnected ? Colors.green : Colors.red;
+    final ThemeData theme = Theme.of(context);
+    final Color statusColor =
+        report.isConnected ? theme.colorScheme.primary : theme.colorScheme.error;
+    final bool hasLatency = report.latencyMs != null;
 
-    return ListTile(
-      onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: statusColor.withOpacity(0.15),
-        child: Icon(
-          report.isConnected ? Icons.check_circle : Icons.error,
-          color: statusColor,
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  report.isConnected
+                      ? Icons.network_check_rounded
+                      : Icons.wifi_off_rounded,
+                  color: statusColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      report.connectionType.displayName,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _formatDate(report.timestamp),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (hasLatency)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${report.latencyMs} ms',
+                    style: theme.textTheme.bodySmall!.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              IconButton(
+                icon: Icon(Icons.chevron_right_rounded),
+                color: theme.colorScheme.onSurfaceVariant,
+                onPressed: onTap,
+              ),
+            ],
+          ),
         ),
       ),
-      title: Text(report.connectionType.displayName),
-      subtitle: Text(_formatDate(report.timestamp)),
-      trailing: report.latencyMs != null
-          ? Text('${report.latencyMs} ms', style: const TextStyle(color: Colors.grey))
-          : null,
     );
   }
 }
